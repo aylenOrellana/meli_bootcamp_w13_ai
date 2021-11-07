@@ -34,12 +34,15 @@ public class Persona {
         return 1;
     }
 
-    public void toString() {
-        System.out.println(this.nombre);
-        System.out.println(this.edad);
-        System.out.println(this.dni);
-        System.out.println(this.peso);
-        System.out.println(this.altura);
+    @Override
+    public String toString() {
+        return "Persona{" +
+                "nombre='" + nombre + '\'' +
+                ", edad=" + edad +
+                ", dni='" + dni + '\'' +
+                ", peso=" + peso +
+                ", altura=" + altura +
+                '}';
     }
 
     public boolean esMayorDeEdad() {
