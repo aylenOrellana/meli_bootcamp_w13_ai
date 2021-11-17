@@ -1,11 +1,13 @@
 package com.bootcamp.SocialMeli.dto;
 
-import com.bootcamp.SocialMeli.model.*;
+import com.bootcamp.SocialMeli.model.Product;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+
 
 @Getter
 @Setter

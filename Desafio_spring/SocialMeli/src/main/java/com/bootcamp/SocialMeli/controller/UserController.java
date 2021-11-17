@@ -1,6 +1,6 @@
 package com.bootcamp.SocialMeli.controller;
 
-import com.bootcamp.SocialMeli.dto.UserFollowersCountDTO;
+import com.bootcamp.SocialMeli.dto.UserCountFollowersDTO;
 import com.bootcamp.SocialMeli.service.UserService;
 import com.bootcamp.SocialMeli.dto.UserDTO;
 import com.bootcamp.SocialMeli.dto.UserFollowedDTO;
@@ -33,19 +33,18 @@ public class UserController {
 
 //    US 0001
     @PostMapping("/users/{userId}/follow/{userIdToFollow}")
-    public ResponseEntity<String>  followUser(@PathVariable int userId, @PathVariable int userIdToFollow) {
+    public void followUser(@PathVariable int userId, @PathVariable int userIdToFollow) {
         userService.followUser(userId, userIdToFollow);
-        return new ResponseEntity<>("Following User",HttpStatus.OK);
+
     }
 //    US 0002
     @GetMapping("/users/{userId}/followers/count/")
-    public UserFollowersCountDTO followersCount(@PathVariable int userId)
+    public UserCountFollowersDTO followersCount(@PathVariable int userId)
     {
         return userService.countFollowers(userId);
     }
 
 //    US 0003 - US 0008
-
     @GetMapping("/users/{userId}/followers/list")
     public UserFollowersDTO orderByFollowers(@PathVariable int userId, @RequestParam(defaultValue = "name_asc") String order){
 
@@ -61,11 +60,8 @@ public class UserController {
 
 //    US 0007
     @PostMapping("/users/{userId}/unfollow/{userIdToUnfollow}")
-    public String unfollowUser (@PathVariable int userId,@PathVariable int userIdToUnfollow){
-        //TODO 07 - agregar validacion de si ya lo sigue en el userService!
+    public void unfollowUser (@PathVariable int userId,@PathVariable int userIdToUnfollow){
         userService.unfollowUser(userId,userIdToUnfollow);
-        return "removed";
-
     }
 
 }

@@ -2,13 +2,13 @@ package com.bootcamp.SocialMeli.service;
 
 import com.bootcamp.SocialMeli.dto.UserDTO;
 import com.bootcamp.SocialMeli.dto.UserFollowedDTO;
-import com.bootcamp.SocialMeli.dto.UserFollowersCountDTO;
+import com.bootcamp.SocialMeli.dto.UserCountFollowersDTO;
 import com.bootcamp.SocialMeli.dto.UserFollowersDTO;
 
 import java.util.List;
 
 public interface UserService {
-    UserFollowersCountDTO countFollowers (int userId);
+    UserCountFollowersDTO countFollowers (int userId);
     void followUser(int userId,int userIdToFollow);
     void unfollowUser(int userId,int userIdToFollow);
     UserDTO getUserById(int userId);

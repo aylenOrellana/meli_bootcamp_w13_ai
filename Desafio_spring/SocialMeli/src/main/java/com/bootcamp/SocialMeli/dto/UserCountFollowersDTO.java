@@ -8,5 +8,11 @@ import lombok.Setter;
 public class UserCountFollowersDTO {
     private int userId;
     private String userName;
-    private int followers_count;
+    private int followersCount;
+
+    public UserCountFollowersDTO(int userId, String userName, int followersCount) {
+        this.userId = userId;
+        this.userName = userName;
+        this.followersCount = followersCount;
+    }
 }

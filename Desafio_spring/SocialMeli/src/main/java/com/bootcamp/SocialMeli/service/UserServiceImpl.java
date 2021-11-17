@@ -1,11 +1,7 @@
 package com.bootcamp.SocialMeli.service;
 
-import com.bootcamp.SocialMeli.dto.UserDTO;
-import com.bootcamp.SocialMeli.dto.UserFollowedDTO;
-import com.bootcamp.SocialMeli.dto.UserFollowersCountDTO;
-import com.bootcamp.SocialMeli.dto.UserFollowersDTO;
-import com.bootcamp.SocialMeli.exception.NotValidParamException;
-import com.bootcamp.SocialMeli.exception.UserIdNotFoundException;
+import com.bootcamp.SocialMeli.dto.*;
+import com.bootcamp.SocialMeli.exception.*;
 import com.bootcamp.SocialMeli.model.User;
 import com.bootcamp.SocialMeli.repository.UserRepository;
 import org.springframework.stereotype.Service;
@@ -44,6 +40,10 @@ public class UserServiceImpl implements UserService {
         else {
             UserDTO user = getUserById(userId);
             UserDTO userToFollow = getUserById(userIdToFollow);
+            if (user.getFollowed().contains(userToFollow)){
+                throw new UserAlreadyFollowedException(userToFollow.getUserId());
+            }
+            ;
             user.getFollowed().add(userToFollow);
             userToFollow.getFollowers().add(user);
         }
@@ -51,14 +51,25 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void unfollowUser(int userId, int userIdToFollow){
-        UserDTO user = getUserById(userId);
-        UserDTO userToUnfollow = getUserById(userIdToFollow);
-        user.getFollowed().remove(userToUnfollow);
-        userToUnfollow.getFollowers().remove(user);
+        if(!repositoryUsers.userExists(userId)){
+            throw new UserIdNotFoundException(userId);
+        }
+        if (!repositoryUsers.userExists(userIdToFollow)){
+            throw new UserIdNotFoundException(userIdToFollow);
+        }
+        else {
+            UserDTO user = getUserById(userId);
+            UserDTO userToUnfollow = getUserById(userIdToFollow);
+            if (!user.getFollowed().contains(userToUnfollow)) {
+                throw new NotFollowingUserException(userToUnfollow.getUserId());
+            }
+            user.getFollowed().remove(userToUnfollow);
+            userToUnfollow.getFollowers().remove(user);
+        }
     }
 
-    public UserFollowersCountDTO countFollowers (int userId){
-        return new UserFollowersCountDTO
+    public UserCountFollowersDTO countFollowers (int userId){
+        return new UserCountFollowersDTO
                 (userId,getUserById(userId).getUserName(),getUserById(userId).getFollowers_count());
 
     }

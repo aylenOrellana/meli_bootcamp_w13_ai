@@ -1,8 +1,10 @@
 package com.bootcamp.SocialMeli.controller;
 
-import com.bootcamp.SocialMeli.dto.*;
+import com.bootcamp.SocialMeli.dto.PostDTO;
+import com.bootcamp.SocialMeli.dto.PostDoneDTO;
+
 import com.bootcamp.SocialMeli.model.*;
-import com.bootcamp.SocialMeli.service.*;
+import com.bootcamp.SocialMeli.service.ProductService;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;
@@ -28,7 +30,6 @@ public class ProductController {
     public List<Post> posts(){
         return productService.getPostList();
     }
-
 
 // TODO   US 0009 - controller
     @GetMapping("/products/followed/{userId}/list")
