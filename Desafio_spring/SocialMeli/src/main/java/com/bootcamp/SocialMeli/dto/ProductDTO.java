@@ -1,4 +1,4 @@
-package com.bootcamp.SocialMeli.dtoBAD;
+package com.bootcamp.SocialMeli.dto;
 
 
 import lombok.AllArgsConstructor;

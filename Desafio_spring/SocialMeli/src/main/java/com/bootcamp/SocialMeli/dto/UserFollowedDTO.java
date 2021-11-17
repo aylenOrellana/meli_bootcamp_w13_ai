@@ -1,11 +1,12 @@
-package com.bootcamp.SocialMeli.dtoBAD;
+package com.bootcamp.SocialMeli.dto;
 
-import bootcamp.SocialMeli.model.User;
+import com.bootcamp.SocialMeli.model.User;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
+
 @Getter
 @Setter
 public class UserFollowedDTO {
