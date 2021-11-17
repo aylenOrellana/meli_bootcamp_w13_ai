@@ -1,9 +1,8 @@
 package com.bootcamp.SocialMeli.controller;
 
-import com.bootcamp.SocialMeli.dto.PostDoneDTO;
-import com.bootcamp.SocialMeli.dto.PostDTO;
-import com.bootcamp.SocialMeli.model.Post;
-import com.bootcamp.SocialMeli.service.ProductService;
+import com.bootcamp.SocialMeli.dto.*;
+import com.bootcamp.SocialMeli.model.*;
+import com.bootcamp.SocialMeli.service.*;
 import org.springframework.web.bind.annotation.*;
 
 import java.text.ParseException;

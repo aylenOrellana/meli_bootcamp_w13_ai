@@ -1,6 +1,6 @@
 package com.bootcamp.SocialMeli.dto;
 
-import com.bootcamp.SocialMeli.model.Product;
+import com.bootcamp.SocialMeli.model.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
