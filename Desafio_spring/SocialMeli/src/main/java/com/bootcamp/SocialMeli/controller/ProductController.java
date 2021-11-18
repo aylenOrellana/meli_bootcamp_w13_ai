@@ -21,9 +21,8 @@ public class ProductController {
 //  US 0005
 
     @PostMapping("/products/post")
-    public String postNewProduct(@RequestBody PostDTO newPost) throws ParseException {
+    public void postNewProduct(@RequestBody PostDTO newPost) throws ParseException {
         productService.post(newPost);
-        return "done";
     }
     //prueba
     @GetMapping("/products")
