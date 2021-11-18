@@ -64,7 +64,7 @@ public class ProductServiceImpl implements ProductService {
         return repositoryProducts.getPostsById(userId);
     }
 
-    // TODO   US 0009 - productService Implemantacion
+    // US 0009 - productService Implemantacion
 
     @Override
     public PostDoneDTO getPostListFrom2WeeksAgo(int userId, String order) {

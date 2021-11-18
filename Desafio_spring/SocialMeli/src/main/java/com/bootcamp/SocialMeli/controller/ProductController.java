@@ -31,7 +31,7 @@ public class ProductController {
         return productService.getPostList();
     }
 
-// TODO   US 0009 - controller
+// US 0009
     @GetMapping("/products/followed/{userId}/list")
     public PostDoneDTO postListLast2Weeks
     (@PathVariable Integer userId,@RequestParam(defaultValue = "date_desc") String order) {
