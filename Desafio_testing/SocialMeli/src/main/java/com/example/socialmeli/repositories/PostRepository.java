@@ -1,6 +1,5 @@
 package com.example.socialmeli.repositories;
 
-import com.example.socialmeli.exceptions.PostNotFoundException;
 import com.example.socialmeli.model.Post;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,22 +9,27 @@ import org.springframework.util.ResourceUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Repository("PostRepository")
 public class PostRepository implements IRepository<Post> {
 
     List<Post> posts;
 
-    public PostRepository(){this.posts = loadRepository();}
+    public PostRepository(){
+        this.posts = loadFromFile("classpath:postsSocialMeli.json");
 
-    @Override
-    public List<Post> loadRepository() {
-        List<Post> postsList = null;
+    }
+    public static List<Post>  loadFromFile(String path) {
+
+        List<Post> loadedData = null;
 
         File file = null;
         try {
-            file = ResourceUtils.getFile("classpath:postsSocialMeli.json");
+            file = ResourceUtils.getFile(path);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -34,13 +38,15 @@ public class PostRepository implements IRepository<Post> {
         TypeReference<List<Post>> typeRef = new TypeReference<>() {};
 
         try {
-            postsList = objectMapper.readValue(file, typeRef);
+            loadedData = objectMapper.readValue(file, typeRef);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        return postsList;
+        return loadedData;
+
     }
+
 
     @Override
     public void push(Post newElement) {
@@ -50,18 +56,27 @@ public class PostRepository implements IRepository<Post> {
     }
 
     @Override
-    public Post getById(Integer id) throws PostNotFoundException {
-        //return posts.stream().findFirst().orElseThrow(null);
-        return posts.stream().filter(post -> post.getIdPost().equals(id)).findFirst().orElseThrow(() -> new PostNotFoundException(id));
+    public Optional<Post> findById(Integer id) {
+        return posts.stream()
+                .filter(post -> post.getIdPost().equals(id))
+                .findFirst();
     }
 
     @Override
-    public List<Post> getAll() {
+    public List<Post> findAll() {
         return this.posts;
     }
 
-    @Override
-    public void removeById(Integer id){
-        posts.removeIf( post -> post.getIdPost().equals(id) );
+    public List<Object> findByUserId(Integer userId) {
+        return this.posts.stream()
+                .filter(post -> post.getUserId().equals(userId))
+                .collect(Collectors.toList());
+    }
+
+    public List<Object> findByUserIdAndHasPromo(Integer userId, boolean hasPromo) {
+        return this.posts.stream()
+                .filter(post ->
+                        post.getUserId().equals(userId) && post.isHasPromo() == hasPromo)
+                .collect(Collectors.toList());
     }
 }

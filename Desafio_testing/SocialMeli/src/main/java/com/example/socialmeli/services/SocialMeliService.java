@@ -39,29 +39,9 @@ public class SocialMeliService implements IService {
 
     //  >>>> USER METHODS
     //!depracted
-    public UserDTO getUserById(Integer id) throws UserNotFoundException {
-        return mapper.map( userRepository.getById(id), UserDTO.class);
-    }
-
-    public void createUser(UserDTO newUser) throws UserAlreadyInUseException, UserNotFoundException {
-        List<User> users = userRepository.getAll();
-
-        if(users.stream().anyMatch( user -> user.getUserId().equals(newUser.getUserId()))){
-            throw new UserAlreadyInUseException(newUser.getUserId());
-        }
-
-        for(Integer id : newUser.getFollowersId()){
-            if( !users.stream().anyMatch( user -> user.getUserId().equals(id) )){
-                throw new UserNotFoundException(id);
-            }
-        }
-
-        userRepository.push(mapper.map(newUser, User.class));
-    }
-
-    public void deleteUserById(Integer userId) throws UserNotFoundException {
-        deletePostByUserId(userId);
-        userRepository.removeById(userId);
+    public User getUserById(Integer id) throws UserNotFoundException {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
     }
 
     public void follow(Integer userId, Integer userToFollowId) throws UserNotFoundException, UserAlreadyInUseException, UserSelfUseException {
@@ -69,14 +49,14 @@ public class SocialMeliService implements IService {
             throw new UserSelfUseException(userId);
         }
 
-        User user = userRepository.getById(userId);
-        User userToFollow = userRepository.getById(userToFollowId);
+        User user = this.getUserById(userId);
+        User userToFollow = this.getUserById(userToFollowId);
 
         if( userToFollow.getFollowersId().stream().anyMatch( id -> id.equals(userId) ) ){
             throw new UserAlreadyInUseException(userToFollowId);
         }
 
-        userRepository.getById(userToFollowId).getFollowersId().add(userId);
+        this.getUserById(userToFollowId).getFollowersId().add(userId);
     }
 
     public void unfollow(Integer userId , Integer userIdToUnfollow) throws UserNotFoundException, UserSelfUseException, UserAlreadyInUseException {
@@ -84,19 +64,19 @@ public class SocialMeliService implements IService {
             throw new UserSelfUseException(userId);
         }
 
-        User user = userRepository.getById(userIdToUnfollow);
+        User user = this.getUserById(userIdToUnfollow);
 
         if( !user.getFollowersId().stream().anyMatch( u -> u.equals(userId) ) ){
             throw new UserAlreadyInUseException(userIdToUnfollow);
         }
 
-        userRepository.getById(userIdToUnfollow).getFollowersId().removeIf( id -> id.equals(userId));
+        this.getUserById(userIdToUnfollow).getFollowersId().removeIf( id -> id.equals(userId));
     }
 
     public FollowersResponseDTO getFollowers(Integer userId, String order) throws UserNotFoundException {
         FollowersResponseDTO followers = new FollowersResponseDTO();
 
-        User user = userRepository.getById(userId);
+        User user = this.getUserById(userId);
 
         followers.setFollowers(
                 getFollowersList(userId,order).stream()
@@ -110,7 +90,7 @@ public class SocialMeliService implements IService {
 
     public FollowedResponseDTO getFollowed(Integer userId, String order) throws UserNotFoundException {
         FollowedResponseDTO followed = new FollowedResponseDTO();
-        User user = userRepository.getById(userId);
+        User user = this.getUserById(userId);
 
         followed.setFollowed(getFollowedList(userId,order));
         followed.setUserName(user.getUserName());
@@ -120,13 +100,13 @@ public class SocialMeliService implements IService {
     }
 
     private List<UserDTO> getFollowersList(Integer userId, String order) throws UserNotFoundException {
-        User user = userRepository.getById(userId);
+        User user = this.getUserById(userId);
 
         List<User> followersList = new ArrayList<>();
 
         for( Integer idFollower : user.getFollowersId() ){
 
-            followersList.add( userRepository.getById(idFollower) );
+            followersList.add( this.getUserById(idFollower) );
 
         }
 
@@ -140,27 +120,21 @@ public class SocialMeliService implements IService {
 
     public List<UserDTO> getFollowedList(Integer userId, String order) throws UserNotFoundException {
 
-        List<User> allUsers = userRepository.getAll();
-
         if( !userExists(userId) ){
             throw new UserNotFoundException(userId);
         }
 
         Sorter sorter = MiFactory.getInstance(order == null ? "name_desc" : order);
 
-        return allUsers.stream().filter(user -> isFollowing(user,userId))
+        return userRepository.findFollowers(userId).stream()
                 .map( u -> mapper.map(u, UserDTO.class))
                 .sorted( (u,b) -> sorter.sort(u,b))
                 .collect(Collectors.toList());
 
     }
 
-    private boolean isFollowing(User userFollower, Integer followId){
-        return userFollower.getFollowersId().stream().anyMatch(id -> id.equals(followId));
-    }
-
     public CountFollowersResponseDTO countFollowers(Integer id) throws UserNotFoundException {
-        User user = userRepository.getById(id);
+        User user = this.getUserById(id);
         CountFollowersResponseDTO quantity = new CountFollowersResponseDTO();
         quantity.setUserId(user.getUserId());
         quantity.setUserName(user.getUserName());
@@ -170,12 +144,11 @@ public class SocialMeliService implements IService {
     }
 
     private boolean userExists(Integer id){
-        return userRepository.getAll().stream().anyMatch( user -> user.getUserId().equals(id) );
+        return userRepository.findById(id).isPresent();
     }
 
     private boolean postExists(Integer id){
-        return postRepository.getAll().stream()
-                .anyMatch( post -> post.getIdPost().equals(id) );
+        return postRepository.findById(id).isPresent();
     }
 
     //  >>>> POSTS METHODS
@@ -183,7 +156,7 @@ public class SocialMeliService implements IService {
     public PostDTO getPostById(Integer postId) throws PostNotFoundException {
 
         return mapper.map(
-                this.postRepository.getById(postId),
+                this.postRepository.findById(postId),
                 PostDTO.class
         );
     }
@@ -206,23 +179,8 @@ public class SocialMeliService implements IService {
                 mapper.map( newPost, Post.class) );
     }
 
-    public void deletePostById(Integer id) throws PostNotFoundException {
-        if( !postRepository.getAll().stream().anyMatch(post -> post.getIdPost().equals(id)) ){
-            throw new PostNotFoundException(id);
-        }
-        postRepository.removeById(id);
-    }
-
-    public void deletePostByUserId(Integer userId) throws UserNotFoundException {
-
-        if(!userExists(userId)){ throw new UserNotFoundException(userId);}
-
-        postRepository.getAll().removeIf(post -> post.getUserId().equals(userId));
-    }
-
     private List<PostDTO> getUserPosts(Integer id){
-        return this.postRepository.getAll().stream()
-                .filter(post -> post.getUserId().equals(id))
+        return this.postRepository.findByUserId(id).stream()
                 .map( post -> mapper.map( post, PostDTO.class ) )
                 .collect(Collectors.toList());
     }
@@ -235,7 +193,14 @@ public class SocialMeliService implements IService {
             List<PostDTO> postsList = getFollowedList(id,null).stream().
                     flatMap(user -> getUserPosts(user.getUserId()).stream()).
                     sorted( (u,b) -> sorter.sort(u,b) ).
-                    filter(post -> post.getDate().compareTo(Date.from(LocalDate.now().minusDays(14).atStartOfDay(ZoneId.systemDefault()).toInstant())) >0).
+                    filter(post ->
+                            post.getDate().compareTo(
+                                    Date.from(
+                                            LocalDate.now()
+                                                    .minusDays(14)
+                                                    .atStartOfDay(
+                                                            ZoneId.systemDefault()
+                                                    ).toInstant())) >0).
                     collect(Collectors.toList());
 
             response.setUserId(id);
@@ -246,7 +211,7 @@ public class SocialMeliService implements IService {
 
 
     public PostsResponseDTO getUserPostRequest(Integer id) throws UserNotFoundException {
-        User user = userRepository.getById(id);
+        User user = this.getUserById(id);
 
         PostsResponseDTO response = new PostsResponseDTO();
 
@@ -256,21 +221,16 @@ public class SocialMeliService implements IService {
         return response;
     }
 
-    public List<PostDTO> getAllPosts(){
-        return postRepository.getAll().stream()
-                .map(post -> mapper.map(post, PostDTO.class) )
-                .collect(Collectors.toList());
-    }
-
     public CountPromosResponseDTO getPromoCount(Integer userId) throws UserNotFoundException {
         CountPromosResponseDTO response = new CountPromosResponseDTO();
 
-        User user = userRepository.getById(userId);
+        User user = this.getUserById(userId);
 
         Integer cantidad = Math.
-                toIntExact(postRepository.getAll().stream().filter(post ->
-                    post.getUserId().equals(userId) && post.isHasPromo()
-                ).count());
+                toIntExact(
+                        postRepository.findByUserIdAndHasPromo( userId, true)
+                                .stream().count()
+                );
 
         response.setUserName(user.getUserName());
         response.setUserId(userId);
@@ -280,12 +240,12 @@ public class SocialMeliService implements IService {
     }
 
     public PostsResponseDTO getPromoPosts(Integer userId) throws UserNotFoundException {
-        User user = userRepository.getById(userId);
+        User user = this.getUserById(userId);
 
         PostsResponseDTO response = new PostsResponseDTO();
 
-        List<PostDTO> promoPosts =  postRepository.getAll().stream()
-                .filter( post -> post.isHasPromo() && post.getUserId().equals(userId))
+        List<PostDTO> promoPosts =  postRepository
+                .findByUserIdAndHasPromo(userId, true).stream()
                 .map( post -> mapper.map(post, PostDTO.class) )
                 .collect(Collectors.toList());
 
