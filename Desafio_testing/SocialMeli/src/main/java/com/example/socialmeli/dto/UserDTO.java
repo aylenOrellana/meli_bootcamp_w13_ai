@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +15,10 @@ import java.util.List;
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class UserDTO {
 
+    @Positive(message = "El id debe ser mayor a cero.")
+    @NotNull(message = "El id no puede estar vacía.")
     private Integer userId;
+
     private String userName;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private List<Integer> followersId = new ArrayList<>();
