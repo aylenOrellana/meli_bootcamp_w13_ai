@@ -30,13 +30,13 @@ public class UsersController {
         return service.countFollowers(userId);
     }
 
-    //US 0003
+    //US 0003 - US 0008
     @GetMapping("/{userId}/followers/list")
     public FollowersResponseDTO getFollowers(@PathVariable Integer userId, @RequestParam @Nullable String order) throws UserNotFoundException {
         return this.service.getFollowers(userId, order);
     }
 
-    //US 0004
+    //US 0004 - US 0009
     @GetMapping("/{userId}/followed/list")
     public FollowedResponseDTO getFollowed(@PathVariable Integer userId, @RequestParam @Nullable String order) throws UserNotFoundException {
         return this.service.getFollowed(userId, order);
