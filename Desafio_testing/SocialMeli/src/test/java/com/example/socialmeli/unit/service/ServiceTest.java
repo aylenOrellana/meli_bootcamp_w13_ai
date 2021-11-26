@@ -2,6 +2,7 @@ package com.example.socialmeli.unit.service;
 
 import com.example.socialmeli.dto.PostDTO;
 import com.example.socialmeli.dto.ProductDTO;
+import com.example.socialmeli.dto.response.CountFollowersResponseDTO;
 import com.example.socialmeli.exceptions.UserAlreadyInUseException;
 import com.example.socialmeli.exceptions.UserNotFoundException;
 import com.example.socialmeli.exceptions.UserSelfUseException;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
@@ -34,31 +36,37 @@ public class ServiceTest {
     SocialMeliService service;
 
 
+/*    @AfterEach
+    void resetData(){
+        reset(repoUsuarios);
+    }*/
+    //TODO T-0001 - positivo => DONE
 
-    //TODO T-0001 - positivo => PENDING
-    /*
     @Test
 
-    void followExistingUser(){
+    void followExistingUser() throws UserNotFoundException, UserAlreadyInUseException, UserSelfUseException {
 
+        //Arrange
+        int userIdTofollow = 11;
         User follower = new User();
         follower.setUserId(10);
         follower.setUserName("Leon Comprador10");
         follower.setFollowersId(new ArrayList<>());
 
-        User followed = new User(2,"david","david@mail.com",new ArrayList<>(),true,new ArrayList<>());
-        Mockito.when(iUserRepository.getUserById(1)).thenReturn(follower);
-        Mockito.when(iUserRepository.getUserById(2)).thenReturn(followed);
-        // Verifica no salte ninguna excepcion
-        assertDoesNotThrow(()->userService.followUser(1,2));
-        // Se llama el get del repositorio
-        Mockito.verify(iUserRepository,Mockito.times(1)).getUserById(1);
-        Mockito.verify(iUserRepository,Mockito.times(1)).getUserById(2);
-        // Agrego el usuario
-        assertEquals(followed.getFollowers().size(),1);
+        User followed = new User();
+        followed.setUserId(11);
+        followed.setUserName("Juan Comprador11");
+        followed.setFollowersId(new ArrayList<>());
+
+        //Mocks
+        when(repoUsuarios.findById(any())).thenReturn(Optional.of(followed));
+        //Act
+        service.follow(follower.getUserId(), followed.getUserId());
+        //Assert
+        assertEquals(1, followed.getFollowersId().size());
 
     }
-*/
+
 
 
     //TODO T-0001 - negativo => DONE
@@ -76,15 +84,15 @@ public class ServiceTest {
     @Test
     void unfollowUser() throws UserNotFoundException, UserAlreadyInUseException, UserSelfUseException {
         //Arrange
-        int userIdToUnfollow = 5;
+        int userIdToUnfollow = 6;
         User user1 = new User();
-        user1.setUserId(10);
-        user1.setUserName("Leon Comprador10");
+        user1.setUserId(20);
+        user1.setUserName("Leon Comprador20");
         user1.setFollowersId(new ArrayList<>());
 
         User user2 = new User();
-        user2.setUserId(11);
-        user2.setUserName("Juan Comprador11");
+        user2.setUserId(21);
+        user2.setUserName("Juan Comprador21");
         user2.setFollowersId(new ArrayList<>());
         //le agrego 2 seguidores
         List<Integer> followers = new ArrayList<>();
@@ -127,17 +135,43 @@ public class ServiceTest {
     //TODO T-0005 - negativo
     //TODO T-0006
 
-    //TODO T-0007
-/*    @Test
-    void countFollowers(){
+    //TODO T-0007 => HECHO PERO FUNCIONANDO MAL :(
+    @Test
+    void countFollowers() throws UserNotFoundException {
+        //Arrange
+        int userIdToCountFollowers= 7;
+        User user1 = new User();
+        user1.setUserId(20);
+        user1.setUserName("Leon Comprador20");
+        user1.setFollowersId(new ArrayList<>());
+
+        User user2 = new User();
+        user2.setUserId(21);
+        user2.setUserName("Juan Comprador21");
+        user2.setFollowersId(new ArrayList<>());
+        //le agrego 2 seguidores
         List<Integer> followers = new ArrayList<>();
-        followers.add(1);
-        followers.add(2);
+        followers.add(user1.getUserId());
+        followers.add(user2.getUserId());
+        //new Userid 7 with 2 followers
+        User newUser = new User();
+        newUser.setUserId(7);
+        newUser.setUserName("Manuel Vendedor7");
+        newUser.setFollowersId(followers);
+        //Followers List
+        List<User> followersList = new ArrayList<>();
+        followersList.add(user1);
+        followersList.add(user2);
 
         //Mock
-        when(repoUsuarios.findFollowers())
+        when(repoUsuarios.findFollowers(any())).thenReturn(followersList);
+        //Act
+        CountFollowersResponseDTO actualCount = service.countFollowers(7);
+        //Assert
+        assertEquals(2,actualCount.getFollowersCount());
 
-    }*/
+
+    }
     //TODO T-0008
 
 /*    void postLast2Weeks(){
