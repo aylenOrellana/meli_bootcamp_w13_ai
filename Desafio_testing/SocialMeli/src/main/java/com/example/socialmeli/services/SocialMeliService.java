@@ -73,11 +73,11 @@ public class SocialMeliService implements IService {
         this.getUserById(userIdToUnfollow).getFollowersId().removeIf( id -> id.equals(userId));
     }
 
-    public FollowersResponseDTO getFollowers(Integer userId, String order) throws UserNotFoundException {
+    public FollowersResponseDTO getFollowers(Integer userId, String order) throws UserNotFoundException,NotValidParamException {
         FollowersResponseDTO followers = new FollowersResponseDTO();
 
         User user = this.getUserById(userId);
-
+        if(!order.equalsIgnoreCase("name_asc") && !order.equalsIgnoreCase("name_desc")){throw new NotValidParamException(order);}
         followers.setFollowers(
                 getFollowersList(userId,order).stream()
                         .collect(Collectors.toList()));

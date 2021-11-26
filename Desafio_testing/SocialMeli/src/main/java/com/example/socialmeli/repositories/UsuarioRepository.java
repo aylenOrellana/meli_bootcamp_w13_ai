@@ -51,7 +51,6 @@ public class UsuarioRepository implements IRepository<User> {
         return users.stream()
                 .filter(us -> us.getUserId().equals(id))
                 .findFirst();
-
     }
 
     @Override
