@@ -1,16 +1,14 @@
 package com.example.socialmeli.unit.service;
 
-import com.example.socialmeli.dto.PostDTO;
-import com.example.socialmeli.dto.ProductDTO;
 import com.example.socialmeli.dto.UserDTO;
 import com.example.socialmeli.dto.response.CountFollowersResponseDTO;
 import com.example.socialmeli.dto.response.FollowersResponseDTO;
+import com.example.socialmeli.dto.response.PostsResponseDTO;
 import com.example.socialmeli.exceptions.NotValidParamException;
 import com.example.socialmeli.exceptions.UserAlreadyInUseException;
 import com.example.socialmeli.exceptions.UserNotFoundException;
 import com.example.socialmeli.exceptions.UserSelfUseException;
 import com.example.socialmeli.model.User;
-import com.example.socialmeli.repositories.IRepository;
 import com.example.socialmeli.repositories.UsuarioRepository;
 import com.example.socialmeli.services.SocialMeliService;
 import com.google.common.collect.Comparators;
@@ -21,11 +19,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.function.Executable;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.*;
+
+import javax.annotation.meta.When;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -38,18 +38,17 @@ public class ServiceTest {
     SocialMeliService service;
 
 
-/*    @AfterEach
+    @AfterEach
     void resetData(){
         reset(repoUsuarios);
-    }*/
-    //TODO T-0001 - positivo => DONE
+    }
+    // T-0001 - positivo => DONE
 
     @Test
-
+    @DisplayName("Seguir usuario existente")
     void followExistingUser() throws UserNotFoundException, UserAlreadyInUseException, UserSelfUseException {
 
         //Arrange
-        int userIdTofollow = 11;
         User follower = new User();
         follower.setUserId(10);
         follower.setUserName("Leon Comprador10");
@@ -61,19 +60,22 @@ public class ServiceTest {
         followed.setFollowersId(new ArrayList<>());
 
         //Mocks
-        when(repoUsuarios.findById(any())).thenReturn(Optional.of(followed));
+        when(repoUsuarios.findById(10)).thenReturn(Optional.of(follower));
+        when(repoUsuarios.findById(11)).thenReturn(Optional.of(followed));
+
         //Act
         service.follow(follower.getUserId(), followed.getUserId());
+
         //Assert
-        verify(repoUsuarios,atLeastOnce()).findById(any());
+        verify(repoUsuarios,atLeastOnce()).findById(10);
+        verify(repoUsuarios,atLeastOnce()).findById(11);
         assertEquals(1, followed.getFollowersId().size());
 
     }
 
-
-
-    //TODO T-0001 - negativo => DONE
+    // T-0001 - negativo => DONE
     @Test
+    @DisplayName("Seguir usuario NO existente")
     void followNonExistingUser(){
         int userIdDoesNotExists = 809;
         when(repoUsuarios.findById(any())).thenReturn(Optional.empty());
@@ -83,8 +85,9 @@ public class ServiceTest {
         assertEquals(UserNotFoundException.class, exception.getClass());
     }
 
-    //TODO T-0002 - positivo => DONE
+    // T-0002 - positivo => DONE
     @Test
+    @DisplayName("Dejar de seguir usuario existente")
     void unfollowUser() throws UserNotFoundException, UserAlreadyInUseException, UserSelfUseException {
         //Arrange
         int userIdToUnfollow = 6;
@@ -110,17 +113,18 @@ public class ServiceTest {
 
         //Mocks
         when(repoUsuarios.findById(userIdToUnfollow)).thenReturn(Optional.of(userToUnfollow));
-        //Act
+        //Act => user id 21 deja de seguir a 5
         service.unfollow(21, userIdToUnfollow);
 
         //Assert
-        verify(repoUsuarios,atLeastOnce()).findById(any());
-        assertEquals(1, userToUnfollow.getFollowersId().size());
-        //assertTrue(userToUnfollow.getFollowersId().contains(expected));
+        verify(repoUsuarios,atLeastOnce()).findById(userIdToUnfollow);
+        assertEquals(1, userToUnfollow.getFollowersId().size()); //queda un follower(id 20)
+        assertTrue(userToUnfollow.getFollowersId().contains(20)); //validar que contenga el id 20 como follower
     }
 
-    //TODO T-0002 - negativo => DONE
+    // T-0002 - negativo => DONE
     @Test
+    @DisplayName("Dejar de seguir usuario NO existente")
     void UserToUnfollowNotFound(){
         int userIdDoesNotExists = 808;
         int idExistingUser = 1;
@@ -130,9 +134,10 @@ public class ServiceTest {
         assertEquals(UserNotFoundException.class, exception.getClass());
     }
 
-    //TODO T-0003 - positivo => DONE
+    // T-0003 - positivo => DONE
     @Test
-    void orderExists() throws UserNotFoundException, NotValidParamException {
+    @DisplayName("Orden por nombre existe")
+    void orderByNameExists() throws UserNotFoundException, NotValidParamException {
         String existingOrder = "name_asc";
         User existingUser = new User();
         //Mock
@@ -142,17 +147,16 @@ public class ServiceTest {
 
         //Assert
         verify(repoUsuarios,atLeastOnce()).findById(any());
-        assertTrue(actualResponse.getUserId()!=null);
+        assertNotNull(actualResponse.getUserId());
 
     }
-    //TODO T-0003 - negativo => DONE
+    // T-0003 - negativo => DONE
     @Test
-    @DisplayName("Order no existe")
-    void orderDoesNotExist() throws UserNotFoundException,NotValidParamException {
-        String nonExistingOrder = "Non Existing Order";
-        User existingUser = new User();
+    @DisplayName("Ordenamiento de nombre no existe")
+    void orderByNameDoesNotExist() throws UserNotFoundException,NotValidParamException {
+        String nonExistingOrder = "Non Existing Order By Name";
         //Mock
-        when(repoUsuarios.findById(any())).thenReturn(Optional.of(existingUser));
+        when(repoUsuarios.findById(any())).thenReturn(Optional.of(new User()));
         //Act
 
         Throwable exception = assertThrows(NotValidParamException.class, () -> service.getFollowers(1,nonExistingOrder));
@@ -160,15 +164,10 @@ public class ServiceTest {
         verify(repoUsuarios,atLeastOnce()).findById(any());
         assertEquals(NotValidParamException.class, exception.getClass());
     }
-    //TODO T-0004
-
-    //TODO T-0005 - positivo
-    //TODO T-0005 - negativo
-
-    //TODO T-0006
+    // T-0004 => DONE
     @Test
     @DisplayName("Devuelve followers order=name_asc")
-    void returnsOrderAscending() throws UserNotFoundException, NotValidParamException {
+    void returnsOrderByNameAscending() throws UserNotFoundException, NotValidParamException {
         //Arrange
         UserDTO user1 = new UserDTO();
         user1.setUserId(60);
@@ -195,21 +194,23 @@ public class ServiceTest {
 
         FollowersResponseDTO followersListDto = service.getFollowers(6,"name_asc");
         Comparator<UserDTO> comparator = Comparator.comparing(UserDTO::getUserName);
+
         assertTrue(Comparators.isInOrder(followersListDto.getFollowers(), comparator));
+        assertEquals(2,followersListDto.getFollowers().size());
 
     }
     @Test
     @DisplayName("Devuelve followers order=name_desc")
-    void returnsOrderDescending() throws UserNotFoundException, NotValidParamException {
+    void returnsOrderByNameDescending() throws UserNotFoundException, NotValidParamException {
         //Arrange
-        UserDTO user1 = new UserDTO();
+        User user1 = new User();
         user1.setUserId(602);
-        user1.setUserName("Leon Comprador20");
+        user1.setUserName("Barbara");
         user1.setFollowersId(new ArrayList<>());
 
-        UserDTO user2 = new UserDTO();
+        User user2 = new User();
         user2.setUserId(612);
-        user2.setUserName("Juan Comprador21");
+        user2.setUserName("Juan");
         user2.setFollowersId(new ArrayList<>());
         //le agrego 2 seguidores
         List<Integer> followers = new ArrayList<>();
@@ -221,20 +222,58 @@ public class ServiceTest {
         user.setUserId(62);
         user.setUserName("Manuel Vendedor");
         user.setFollowersId(followers);
-
+        List<Integer> listOfIDsExpected = List.of(612,602);
         //Mock
-        when(repoUsuarios.findById(any())).thenReturn(Optional.of(user));
+        when(repoUsuarios.findById(602)).thenReturn(Optional.of(user1));
+        when(repoUsuarios.findById(612)).thenReturn(Optional.of(user2));
+        when(repoUsuarios.findById(62)).thenReturn(Optional.of(user));
 
         FollowersResponseDTO followersListDto = service.getFollowers(62,"name_desc");
-        Comparator<UserDTO> comparator = Comparator.comparing(UserDTO::getUserName);
-        assertFalse(Comparators.isInOrder(followersListDto.getFollowers(), comparator));
+        //En orden desc primero debe estar Juan(id 612) y luego Barbara(id 602)
+        assertEquals(listOfIDsExpected.get(0),followersListDto.getFollowers().get(0).getUserId());
+        assertEquals("Juan",followersListDto.getFollowers().get(0).getUserName());
+
+        assertEquals(listOfIDsExpected.get(1),followersListDto.getFollowers().get(1).getUserId());
+        assertEquals("Barbara",followersListDto.getFollowers().get(1).getUserName());
+
+        assertEquals(2,followersListDto.getFollowers().size());
 
     }
 
-
-
-    //TODO T-0007 => HECHO PERO FUNCIONANDO MAL :(
+    // T-0005 - positivo => DONE
     @Test
+    @DisplayName("Orden por fecha existe")
+    void orderByDateExistS() throws UserNotFoundException, NotValidParamException {
+        String existingOrder = "date_asc";
+        User existingUser = new User();
+        //Mock
+        when(repoUsuarios.findById(1)).thenReturn(Optional.of(existingUser));
+        //Act
+        PostsResponseDTO actualResponse = service.getFollowedPostList(1,existingOrder);
+
+        //Assert
+        verify(repoUsuarios,atLeastOnce()).findById(1);
+        assertNotNull(actualResponse.getUserId());
+    }
+
+    // T-0005 - negativo => DONE
+    @Test
+    @DisplayName("Orden por fecha no existe")
+    void orderByDateDoesNotExist() throws UserNotFoundException,NotValidParamException {
+        String nonExistingOrder = "Non Existing Order Date";
+
+        //Act
+        Throwable exception = assertThrows(NotValidParamException.class, () -> service.getFollowedPostList(1,nonExistingOrder));
+        //Assert
+
+        assertEquals(NotValidParamException.class, exception.getClass());
+    }
+
+    //TODO T-0006 => PENDING
+
+    // T-0007 => DONE
+    @Test
+    @DisplayName("Cantidad de followers")
     void countFollowers() throws UserNotFoundException {
         //Arrange
         int userIdToCountFollowers= 7;
@@ -262,7 +301,8 @@ public class ServiceTest {
         followersList.add(user2);
 
         //Mock
-        when(repoUsuarios.findFollowers(any())).thenReturn(followersList);
+        when(repoUsuarios.findFollowers(userIdToCountFollowers)).thenReturn(followersList);
+        when(repoUsuarios.findById(userIdToCountFollowers)).thenReturn(Optional.of(newUser));
         //Act
         CountFollowersResponseDTO actualCount = service.countFollowers(userIdToCountFollowers);
         //Assert
@@ -270,8 +310,8 @@ public class ServiceTest {
 
 
     }
-    //TODO T-0008
 
+    //TODO T-0008
 /*    void postLast2Weeks(){
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("d-MM-yyyy");
         String date = "18-12-2021";

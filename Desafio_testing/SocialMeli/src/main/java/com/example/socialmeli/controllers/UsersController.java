@@ -38,7 +38,7 @@ public class UsersController {
 
     //US 0004 - US 0009
     @GetMapping("/{userId}/followed/list")
-    public FollowedResponseDTO getFollowed(@PathVariable Integer userId, @RequestParam String order) throws UserNotFoundException {
+    public FollowedResponseDTO getFollowed(@PathVariable Integer userId, @RequestParam String order) throws UserNotFoundException, NotValidParamException {
         return this.service.getFollowed(userId, order);
     }
 

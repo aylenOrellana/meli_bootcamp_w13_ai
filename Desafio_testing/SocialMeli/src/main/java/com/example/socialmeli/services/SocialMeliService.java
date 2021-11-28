@@ -32,11 +32,6 @@ public class SocialMeliService implements IService {
 
     ModelMapper mapper = new ModelMapper();
 
-    /*public SocialMeliService(UsuarioRepository userRepository, PostRepository postRepository) {
-        this.userRepository = userRepository;
-        this.postRepository = postRepository;
-    }*/
-
     //  >>>> USER METHODS
     //!depracted
     public User getUserById(Integer id) throws UserNotFoundException {
@@ -77,7 +72,7 @@ public class SocialMeliService implements IService {
         FollowersResponseDTO followers = new FollowersResponseDTO();
 
         User user = this.getUserById(userId);
-        if(!order.equalsIgnoreCase("name_asc") && !order.equalsIgnoreCase("name_desc")){throw new NotValidParamException(order);}
+
         followers.setFollowers(
                 getFollowersList(userId,order).stream()
                         .collect(Collectors.toList()));
@@ -88,7 +83,8 @@ public class SocialMeliService implements IService {
         return followers;
     }
 
-    public FollowedResponseDTO getFollowed(Integer userId, String order) throws UserNotFoundException {
+    public FollowedResponseDTO getFollowed(Integer userId, String order) throws UserNotFoundException, NotValidParamException {
+        if(!order.equalsIgnoreCase("name_asc") && !order.equalsIgnoreCase("name_desc")){throw new NotValidParamException(order);}
         FollowedResponseDTO followed = new FollowedResponseDTO();
         User user = this.getUserById(userId);
 
@@ -99,7 +95,8 @@ public class SocialMeliService implements IService {
         return followed;
     }
 
-    private List<UserDTO> getFollowersList(Integer userId, String order) throws UserNotFoundException {
+    private List<UserDTO> getFollowersList(Integer userId, String order) throws UserNotFoundException, NotValidParamException {
+        if(!order.equalsIgnoreCase("name_asc") && !order.equalsIgnoreCase("name_desc")){throw new NotValidParamException(order);}
         User user = this.getUserById(userId);
 
         List<User> followersList = new ArrayList<>();
@@ -185,7 +182,9 @@ public class SocialMeliService implements IService {
                 .collect(Collectors.toList());
     }
 
-    public PostsResponseDTO getFollowedPostList(Integer id, String order) throws UserNotFoundException {
+    public PostsResponseDTO getFollowedPostList(Integer id, String order) throws UserNotFoundException,NotValidParamException {
+        if(!order.equalsIgnoreCase("date_asc") && !order.equalsIgnoreCase("date_desc")){throw new NotValidParamException(order);}
+
             Sorter sorter = MiFactory.getInstance(order == null ? "date_desc" : order );
 
             PostsResponseDTO response = new PostsResponseDTO();
