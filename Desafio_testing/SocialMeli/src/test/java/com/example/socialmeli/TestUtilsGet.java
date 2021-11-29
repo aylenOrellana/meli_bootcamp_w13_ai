@@ -1,6 +1,7 @@
 package com.example.socialmeli;
 
 import com.example.socialmeli.dto.PostDTO;
+import com.example.socialmeli.dto.ProductDTO;
 import com.example.socialmeli.dto.UserDTO;
 import com.example.socialmeli.model.Post;
 import com.example.socialmeli.model.Product;
@@ -168,8 +169,8 @@ public class TestUtilsGet {
     }
 
 
-    public static Post getMesa() {
-        Post mesa = new Post();
+    public static PostDTO getMesa() {
+        PostDTO mesa = new PostDTO();
 
         mesa.setUserId(81);
         Date mesaDate = Date.from(LocalDate.of(2021, 12, 01).atStartOfDay(ZoneId.systemDefault()).toInstant());
@@ -178,7 +179,7 @@ public class TestUtilsGet {
         mesa.setIdPost(100);
         mesa.setPrice(2500);
 
-        Product mesaDetail = new Product();
+        ProductDTO mesaDetail = new ProductDTO();
         mesaDetail.setProductId(3);
         mesaDetail.setProductName("mesa");
         mesaDetail.setBrand("Muebles S.A.");
@@ -212,7 +213,7 @@ public class TestUtilsGet {
 
     public static List<PostDTO> getUnsortedPostDTOList() {
 
-        List<Post> posts = List.of(getZapatillas(), getSilla(), getComputadora(),getMesa());
+        List<Post> posts = List.of(getZapatillas(), getSilla(), getComputadora());
 
         return posts.stream().map(u -> mapper.map(u, PostDTO.class)).collect(Collectors.toList());
     }

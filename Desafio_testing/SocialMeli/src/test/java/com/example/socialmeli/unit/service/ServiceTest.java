@@ -287,15 +287,13 @@ public class ServiceTest {
 
         PostsResponseDTO posts  = service.getFollowedPostList(2, "date_asc");
 
-        assertEquals(4, posts.getPosts().size());
+        assertEquals(3, posts.getPosts().size());
         verify(userRepositoryMock, atLeastOnce()).findFollowed(2);
         verify(postRepositoryMock, atLeastOnce()).findByUserId(1);
 
     }
 
-
-
-
+    
     // T-0007
 
     @Test
@@ -342,7 +340,7 @@ public class ServiceTest {
 
     @Test
     @DisplayName("Solo muestra los post de hace 2 semanas y ORDERNADO")
-/*    el campo order no puede ser nulo y tiene un valor por default en el controller donde default value = date_desc. Por lo tanto no solo trae los post de 2 semanas atras, asino que tambien ordenado*/
+/*    el campo order no puede ser nulo y tiene un valor por default en el controller donde default value = date_desc. Por lo tanto no solo trae los post de 2 semanas atras, sino que tambien ordenado*/
     void postLast2Weeks() throws ParseException, UserNotFoundException, NotValidParamException {
         User user1 = getUser1();
         User user2 = getUser2();
@@ -355,7 +353,7 @@ public class ServiceTest {
 
         PostsResponseDTO posts  = service.getFollowedPostList(2, "date_desc");
 
-        assertEquals(4, posts.getPosts().size());
+        assertEquals(3, posts.getPosts().size());
         verify(userRepositoryMock, atLeastOnce()).findFollowed(2);
         verify(postRepositoryMock, atLeastOnce()).findByUserId(1);
     }
