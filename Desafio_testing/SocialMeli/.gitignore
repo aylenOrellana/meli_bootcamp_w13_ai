@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### MAC configuration ###
-.DS_Store
+/.DS_Store
